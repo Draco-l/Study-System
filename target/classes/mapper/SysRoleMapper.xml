@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.mapper.SysRoleMapper">
+
+
+    <!--    角色结果-->
+    <resultMap id="roleMap" type="com.lyf.entity.SysRole">
+        <id column="id" property="id"/>
+        <result column="label" property="label"/>
+        <result column="code" property="code"/>
+        <result column="status" property="status"/>
+<!--        collection集合 property 对应实体里的属性名 ofType属于什么类型 column将要传递给查询的标签的值-->
+<!--        <collection property="menus" ofType="com.lyf.entity.SysMenu" column="id"/>-->
+<!--        <collection property="permissions" ofType="com.lyf.entity.SysPermission" column="id"/>-->
+    </resultMap>
+    
+    
+    <!--    分页查询角色数据-->
+    <select id="findPage" resultMap="roleMap">
+        select * from sys_role 
+        <if test="queryString != null and queryString.length > 0 ">
+            where label like  concat('%' ,#{queryString},'%') or code like concat('%' ,#{queryString},'%')
+        </if>
+    </select>
+
+    <!--    添加角色数据-->
+<!-- keyProperty:指定返回自增的属性名  -->
+    <insert id="insert" parameterType="com.lyf.entity.SysRole" keyProperty="id" useGeneratedKeys="true">
+        insert into sys_role(label, code , status)
+        values (#{label},#{code},#{status})
+    </insert>
+
+
+
+
+    <!-- 删除角色数据   -->
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from sys_role where id = #{id}
+    </delete>
+
+
+    <!-- 修改角色数据 -->
+    <update id="update" parameterType="com.lyf.entity.SysRole">
+        update sys_role
+        <set>
+            <if test="label != null">
+                label = #{label},
+            </if>
+            <if test="code != null">
+                code = #{code},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--   添加角色对应的权限信息 -->
+    <insert id="insertPermissions">
+        insert into  roles_permissions values (#{roleId},#{permissionID})
+    </insert>
+
+    <!--   添加角色对应的菜单信息 -->
+    <insert id="insertMenus">
+        insert into  roles_menus values (#{roleId},#{menuId})
+    </insert>
+
+<!--    根据角色id删除对应权限信息-->
+    <delete id="deletePermissionById">
+        delete from roles_permissions where role_id = #{roleId}
+    </delete>
+
+    <!--    根据角色id删除对应权限信息-->
+    <delete id="deleteMenuById">
+        delete from roles_menus where role_id = #{roleId}
+    </delete>
+
+<!--    根据角色名称查询角色信息-->
+    <select id="findByLabel" parameterType="java.lang.String" resultType="com.lyf.entity.SysRole">
+        select * from sys_role where label = #{code}
+    </select>
+
+
+</mapper>

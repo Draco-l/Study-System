@@ -1,0 +1,49 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: sport
+
+
+
+  #jdbc
+  datasource:
+    url: jdbc:mysql://localhost:13306/sport?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    #用户名
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+
+#配置Mybatis
+mybatis:
+  #mapper接口找的xml文件
+  mapper-locations: classpath:mapper/*.xml
+  #扫描的实体
+  type-aliases-package: com.lyf.entity
+  #mybatis内置配置
+  configuration:
+    #sql日志打印
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    #驼峰命名
+    map-underscore-to-camel-case: true
+
+jwt:
+  #请求头
+  tokenHeader: Authorization
+  #签名加盐
+  secret: lyf123456ThisOneIsToShootTOBeUsingSoItNeedToBeLongerDoYouUnderstand56281907LongerMoreLonger
+  #jwt过期时间
+  expiration: 604800
+  #token头部
+  tokenHead: 'Bearer '
+
+
+#redis相关配置
+  redis:
+    #配置主机
+    host: 127.0.0.1
+    #配置使用的数据库
+    database: 3
+    #指定端口
+    port: 6379

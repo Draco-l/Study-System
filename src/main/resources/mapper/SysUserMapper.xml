@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.mapper.SysUserMapper">
+
+
+    <!--    <select id="findAll"   resultType="com.lyf.entity.SysUser">-->
+<!--        select * from sys_user-->
+<!--    </select>-->
+
+    <!--    获取用户信息 -->
+<!--    <select id="findByUsername" parameterType="java.lang.String" resultMap="mainMap">-->
+    <select id="findByUsername" parameterType="java.lang.String" resultType="com.lyf.entity.SysUser">
+        select * from sys_user where username = #{username}
+    </select>
+
+
+    <!--用户信息结果-->
+    <resultMap id="mainMap" type="com.lyf.entity.SysUser">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="nickName" property="nickName"/>
+        <result column="password" property="password"/>
+        <result column="sex" property="sex"/>
+        <result column="avatar" property="avatar"/>
+        <result column="address" property="address"/>
+        <result column="openId" property="openId"/>
+        <result column="status" property="status"/>
+        <result column="admin" property="admin"/>
+        <result column="phoneNumber" property="phoneNumber"/>
+        <result column="email" property="email"/>
+
+    </resultMap>
+
+<!--角色结果-->
+    <resultMap id="roleMap" type="com.lyf.entity.SysRole">
+        <id column="id" property="id"/>
+        <result column="label" property="label"/>
+        <result column="code" property="code"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+<!--    菜单结果-->
+    <resultMap id="menuMap" type="com.lyf.entity.SysMenu">
+        <id column="id" property="id"/>
+        <result column="path" property="path"/>
+        <result column="icon" property="icon"/>
+        <result column="title" property="title"/>
+        <result column="component" property="component"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+<!--        权限结果-->
+    <resultMap id="permissionMap" type="com.lyf.entity.SysPermission">
+        <id column="id" property="id"/>
+        <result column="label" property="label"/>
+        <result column="code" property="code"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+
+<!--根据用户id查询角色信息-->
+    <select id="findRoles" parameterType="int" resultMap="roleMap">
+        select * from sys_role where status = 1
+                <if test="userId != null">
+                    and id in (select role_id from user_roles where user_id = #{userId})
+                </if>
+    </select>
+
+<!--    根据角色id查询数据权限信息-->
+    <select id="findPermissions" parameterType="int" resultMap="permissionMap">
+        SELECT * from sys_permission where status = 1
+                 <if test="userId">
+                     and id in (select permission_id from roles_permissions WHERE role_id in (SELECT role_id from user_roles WHERE user_id = #{userId}))
+                 </if>
+    </select>
+
+<!--    根据角色id查询菜单信息-->
+    <select id="findMenus" parameterType="int" resultMap="menuMap">
+        select * from sys_menu where parent_id is null and status = 1
+                 <if test="userId">
+                     and id in(select menu_id from roles_menus where role_id in(select user_roles.role_id from user_roles where user_id = #{userId}))
+                 </if>
+    </select>
+
+<!--获取子菜单信息-->
+    <select id="findChildrenMenus" parameterType="int" resultType="com.lyf.entity.SysMenu">
+        select * from sys_menu where  parent_id = #{id} and status = 1
+        <if test="userId != null">
+                    and id in  (SELECT menu_id from roles_menus where role_id in(select role_id from user_roles WHERE user_id = #{userId}))
+        </if>
+    </select>
+
+<!--    分页查询-->
+    <select id="findPage" resultMap="mainMap">
+        select * from sys_user
+        <if test="queryString != null and queryString.length > 0">
+            where username like concat('%',#{queryString},'%')
+            or nickName like concat('%',#{queryString},'%')
+            or phoneNumber like concat('%',#{queryString},'%')
+        </if>
+    </select>
+
+
+    <!--    添加用户信息-->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_user(username, password, nickName, sex, avatar, address, openId, status, admin, phoneNumber,email)
+        values(#{username},#{password},#{nickName},#{sex},#{avatar},#{address},#{openId},#{status},#{admin},#{phoneNumber},#{email})
+    </insert>
+
+    <update id="update">
+        update sys_user
+        <set>
+            <if test="password !=null">
+                password = #{password},
+            </if>
+            <if test="nickName !=null">
+                nickName = #{nickName},
+            </if>
+            <if test="sex !=null">
+                sex = #{sex},
+            </if>
+            <if test="avatar !=null">
+                avatar = #{avatar},
+            </if>
+            <if test="address !=null">
+                address = #{address},
+            </if>
+            <if test="openId !=null">
+                openId = #{openId},
+            </if>
+            <if test="status !=null">
+                status = #{status},
+            </if>
+            <if test="admin !=null">
+                admin = #{admin},
+            </if>
+            <if test="phoneNumber !=null">
+                phoneNumber = #{phoneNumber},
+            </if>
+            <if test="email !=null">
+                email = #{email},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+    <delete id="delete">
+        delete  from sys_user where id = #{id}
+    </delete>
+
+<!--    根据用户信息角色列表，添加用户角色-->
+    <insert id="insertUserRoles">
+        insert into user_roles  values(#{userId},#{roleId})
+    </insert>
+
+<!--    根据用户id删除角色列表-->
+    <delete id="deleteRolesByUserId">
+        delete from user_roles where user_id = #{userId}
+    </delete>
+
+    <!--    根据id查询用户信息-->
+    <select id="findById" resultType="com.lyf.entity.SysUser" parameterType="java.lang.Long">
+        select * from sys_user where id = #{id}
+    </select>
+
+
+</mapper>
